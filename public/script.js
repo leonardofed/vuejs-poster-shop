@@ -54,20 +54,27 @@ new Vue ({
         },
 
         onSubmit: function(){
-            this.items = [];
-            this.loading = true;
-            this.$http.
-            get('/search/'.concat(this.newSearch))
-            .then(function(res) {
-                this.results = res.data;
-                this.items = res.data.slice(0, LOAD_NUM);
-                this.lastSearch = this.newSearch;
-                this.loading = false;
-            });
+            if (this.newSearch.length) {
+                this.items = [];
+                this.loading = true;
+                this.$http.
+                get('/search/'.concat(this.newSearch))
+                    .then(function(res) {
+                        this.results = res.data;
+                        this.items = res.data.slice(0, LOAD_NUM);
+                        this.appendItems();
+                        this.lastSearch = this.newSearch;
+                        this.loading = false;
+                    });
+            }
         },
 
         appendItems: function() {
-            console.log('Append Items');
+            if (this.items.length < this.results.length){
+
+               var append = this.results.slice(this.items.length, this.items.length + LOAD_NUM);
+               this.items = this.items.concat(append);
+            }
         }
     },
     filters: {
@@ -83,6 +90,12 @@ new Vue ({
         watcher.enterViewport(function() {
             vueIstance.appendItems();
         });
+    },
+    
+    computed: {
+        noMoreItems: function () {
+            return this.items.length === this.results.length && this.results.length > 0;
+        }
     }
 });
 
